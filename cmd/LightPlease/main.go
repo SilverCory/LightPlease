@@ -48,10 +48,10 @@ func main() {
 		W = 0 + W
 
 		io.DisplayRGBW(
-			int16(math.Floor(math.Sqrt(float64(R)))),
-			int16(math.Floor(math.Sqrt(float64(G)))),
-			int16(math.Floor(math.Sqrt(float64(R)))),
-			int16(math.Floor(math.Sqrt(float64(G)))),
+			int16(math.Floor(math.Sqrt(float64(int(R)/len(colors))))),
+			int16(math.Floor(math.Sqrt(float64(int(G)/len(colors))))),
+			int16(math.Floor(math.Sqrt(float64(int(R)/len(colors))))),
+			int16(math.Floor(math.Sqrt(float64(int(G)/len(colors))))),
 		)
 	}
 
