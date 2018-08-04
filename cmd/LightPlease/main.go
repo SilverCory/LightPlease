@@ -50,7 +50,7 @@ func main() {
 		io.DisplayRGBW(
 			int16(math.Floor(math.Sqrt(float64(R)))),
 			int16(math.Floor(math.Sqrt(float64(G)))),
-			int16(math.Floor(math.Sqrt(float64(B)))),
+			int16(math.Floor(math.Sqrt(float64(R)))),
 			int16(math.Floor(math.Sqrt(float64(G)))),
 		)
 	}
