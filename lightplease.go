@@ -4,7 +4,7 @@ import (
 	"github.com/stianeikeland/go-rpio"
 )
 
-const PWMFreq = 3825000
+const PWMFreq = 510000
 
 type IOOut struct {
 	pinRed, pinGreen, pinBlue, pinWhite rpio.Pin
