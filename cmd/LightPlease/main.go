@@ -61,9 +61,11 @@ func main() {
 
 		if err := sendArduinoCommand(byte('F'), AverageColourValue(R, len(colors)), AverageColourValue(G, len(colors)), AverageColourValue(B, len(colors)), AverageColourValue(W, len(colors)), s); err != nil {
 			fmt.Println(err)
-			s, err = goserial.OpenPort(config)
-			if err != nil {
-				panic(err)
+			if err.Error() != "short write" {
+				s, err = goserial.OpenPort(config)
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
 	}
