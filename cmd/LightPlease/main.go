@@ -25,7 +25,7 @@ func main() {
 		return
 	}
 
-	config := &goserial.Config{Name: findArduino(), Baud: 9600}
+	config := &goserial.Config{Name: findArduino(), Baud: 115200}
 	s, err := goserial.OpenPort(config)
 	if err != nil {
 		panic(err)
