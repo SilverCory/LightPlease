@@ -36,3 +36,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/SilverCory/go-lightpack"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/huin/goserial"
