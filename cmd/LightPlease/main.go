@@ -103,7 +103,7 @@ func findArduino() string {
 	// Look for what is mostly likely the Arduino device
 	for _, f := range contents {
 		if strings.Contains(f.Name(), "tty.usbserial") ||
-			strings.Contains(f.Name(), "ttyUSB") || strings.Contains(f.Name(), "ttyAMA") {
+			strings.Contains(f.Name(), "ttyUSB") || strings.Contains(f.Name(), "serial") {
 			return "/dev/" + f.Name()
 		}
 	}
