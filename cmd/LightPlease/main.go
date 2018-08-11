@@ -39,6 +39,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
+			sendArduinoCommand(byte('F'), uint8(0), uint8(0), uint8(0), uint8(0), s)
 			s.Close()
 			os.Exit(0)
 		}
@@ -65,7 +66,7 @@ func main() {
 		G /= length
 		B /= length
 
-		if err := sendArduinoCommand(byte('F'), uint8(R), uint8(G), uint8(B), uint8(W), s); err != nil {
+		if err := sendArduinoCommand(byte('F'), uint8(R/0x101), uint8(G/0x101), uint8(B/0x101), uint8(W/0x101), s); err != nil {
 			fmt.Println(err)
 			if err.Error() != "short write" {
 				s, err = goserial.OpenPort(config)
