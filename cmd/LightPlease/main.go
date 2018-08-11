@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	col "image/color"
 	"io"
 	"io/ioutil"
 	"os"
@@ -52,21 +51,25 @@ func main() {
 			time.Sleep(3 * time.Second)
 		}
 
-		var R, G, B, W uint32
-		for _, color := range colors {
-			rgbaCol := col.RGBA{R: color.R, G: color.G, B: color.B, A: 255}
-			r, g, b, _ := rgbaCol.RGBA()
-			R += r
-			G += g
-			B += b
-		}
+		//var R, G, B, W uint32
+		//for _, color := range colors {
+		//	rgbaCol := col.RGBA{R: color.R, G: color.G, B: color.B, A: 255}
+		//	r, g, b, _ := rgbaCol.RGBA()
+		//	R += r
+		//	G += g
+		//	B += b
+		//}
+		//
+		//length := uint32(len(colors))
+		//R /= length
+		//G /= length
+		//B /= length
 
-		length := uint32(len(colors))
-		R /= length
-		G /= length
-		B /= length
+		//if err := sendArduinoCommand(byte('F'), uint8(R/0x101), uint8(G/0x101), uint8(B/0x101), uint8(W/0x101), s); err != nil {
 
-		if err := sendArduinoCommand(byte('F'), uint8(R/0x101), uint8(G/0x101), uint8(B/0x101), uint8(W/0x101), s); err != nil {
+		lastColour := colors[len(colors)-1]
+
+		if err := sendArduinoCommand(byte('F'), lastColour.R, lastColour.G, lastColour.B, 0, s); err != nil {
 			fmt.Println(err)
 			if err.Error() != "short write" {
 				s, err = goserial.OpenPort(config)
