@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	col "image/color"
 	"io"
 	"io/ioutil"
-	"math"
 	"os"
 	"os/signal"
 	"strings"
@@ -51,15 +51,21 @@ func main() {
 			time.Sleep(3 * time.Second)
 		}
 
-		var R, G, B, W uint16
+		var R, G, B, W uint32
 		for _, color := range colors {
-			R = R + (uint16(color.R) ^ 2)
-			G = G + (uint16(color.G) ^ 2)
-			B = B + (uint16(color.B) ^ 2)
+			rgbaCol := col.RGBA{R: color.R, G: color.G, B: color.B, A: 255}
+			r, g, b, _ := rgbaCol.RGBA()
+			R += r
+			G += g
+			B += b
 		}
-		W = 0 + W
 
-		if err := sendArduinoCommand(byte('F'), AverageColourValue(R, len(colors)), AverageColourValue(G, len(colors)), AverageColourValue(B, len(colors)), AverageColourValue(W, len(colors)), s); err != nil {
+		length := uint32(len(colors))
+		R /= length
+		G /= length
+		B /= length
+
+		if err := sendArduinoCommand(byte('F'), uint8(R), uint8(G), uint8(B), uint8(W), s); err != nil {
 			fmt.Println(err)
 			if err.Error() != "short write" {
 				s, err = goserial.OpenPort(config)
@@ -70,10 +76,6 @@ func main() {
 		}
 	}
 
-}
-
-func AverageColourValue(colour uint16, length int) uint8 {
-	return uint8(math.Floor(math.Sqrt(float64(int(colour) / length))))
 }
 
 func sendArduinoCommand(command byte, red, green, blue, white byte, serialPort io.ReadWriteCloser) error {

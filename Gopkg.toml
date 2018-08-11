@@ -40,3 +40,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/huin/goserial"
+
+[[constraint]]
+  name = "github.com/lucasb-eyer/go-colorful"
+  version = "1.0.0"
