@@ -64,32 +64,35 @@ func main() {
 
 	fmt.Println("Started and connected.")
 
+	requestNumber := 0
+	ledsOn := false
 	for {
+		// Check if the LEDS are on.
+		requestNumber++
+		if requestNumber > 15 {
+			status, err := api.GetStatus()
+			if err != nil {
+				fmt.Println(err)
+				time.Sleep(3 * time.Second)
+			}
+
+			if status != lightpack.StatusOn {
+				ledsOn = false
+			}
+		}
+
+		if !ledsOn {
+			time.Sleep(66 * time.Millisecond) // Sleep 66 millis, because after 15 loops, it will be ~1 second.
+			continue
+		}
+
 		colors, err := api.GetColors()
 		if err != nil {
 			fmt.Println(err)
 			time.Sleep(3 * time.Second)
 		}
 
-		// This is to average all of the LED colours,
-		//var R, G, B, W uint32
-		//for _, color := range colors {
-		//	rgbaCol := col.RGBA{R: color.R, G: color.G, B: color.B, A: 255}
-		//	r, g, b, _ := rgbaCol.RGBA()
-		//	R += r
-		//	G += g
-		//	B += b
-		//}
-		//
-		//length := uint32(len(colors))
-		//R /= length
-		//G /= length
-		//B /= length
-
-		//if err := sendArduinoCommand(byte('F'), uint8(R/0x101), uint8(G/0x101), uint8(B/0x101), uint8(W/0x101), s); err != nil {
-
 		lastColour := colors[len(colors)-2] // Not sure why it's neg 2...
-
 		if err := sendArduinoCommand(byte('F'), correctionArray[lastColour.R], correctionArray[lastColour.G], correctionArray[lastColour.B], 0, s); err != nil {
 			fmt.Println(err)
 			if err.Error() != "short write" {
@@ -99,7 +102,8 @@ func main() {
 				}
 			}
 		}
-		time.Sleep(10 * time.Millisecond)
+
+		time.Sleep(10 * time.Millisecond) // Sleep so we don't crash the API.
 	}
 
 }
