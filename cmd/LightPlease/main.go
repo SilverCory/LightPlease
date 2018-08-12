@@ -78,6 +78,8 @@ func main() {
 
 			if status != lightpack.StatusOn {
 				ledsOn = false
+			} else {
+				ledsOn = true
 			}
 		}
 
