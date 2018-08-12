@@ -24,7 +24,7 @@ void setup() {
 
 // Display the RGBW via PWM
 void showAnalogRGBW( const Command& cmd)
-{
+{  
   analogWrite(REDPIN,   cmd.r );
   analogWrite(GREENPIN, cmd.g );
   analogWrite(BLUEPIN,  cmd.b );
