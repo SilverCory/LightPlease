@@ -64,7 +64,7 @@ func main() {
 
 	fmt.Println("Started and connected.")
 
-	requestNumber := 0
+	requestNumber := 14
 	ledsOn := false
 	for {
 		// Check if the LEDS are on.
@@ -78,6 +78,7 @@ func main() {
 
 			if status != lightpack.StatusOn {
 				ledsOn = false
+				sendArduinoCommand(byte('F'), uint8(0), uint8(0), uint8(0), uint8(0), s) // Turn off the LEDs.
 			} else {
 				ledsOn = true
 			}
