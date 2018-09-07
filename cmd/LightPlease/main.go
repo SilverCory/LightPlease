@@ -36,6 +36,7 @@ var correctionArray = []uint8{
 func main() {
 
 	testing := flag.Bool("test", false, "enables a test mode that cycles through memes.")
+	flag.Parse()
 
 	api := lightpack.API{
 		Address: "192.168.0.12:3636",
