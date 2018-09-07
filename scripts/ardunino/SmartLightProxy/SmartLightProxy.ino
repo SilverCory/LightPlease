@@ -1,9 +1,9 @@
 #include <SoftwareSerial.h>
 
-#define WHITEPIN  9
-#define REDPIN   5
+#define REDPIN   3
 #define GREENPIN 6
-#define BLUEPIN  3
+#define BLUEPIN  9
+#define WHITEPIN  10
 
 typedef struct {
   char instruction; // The instruction that arrived by serial connection.
@@ -21,6 +21,7 @@ void setup() {
 
   Serial.begin(115200);
 }
+
 
 // Display the RGBW via PWM
 void showAnalogRGBW( const Command& cmd)

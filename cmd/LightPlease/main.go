@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -33,13 +34,18 @@ var correctionArray = []uint8{
 	215, 218, 220, 223, 225, 228, 231, 233, 236, 239, 241, 244, 247, 249, 252, 255}
 
 func main() {
+
+	testing := flag.Bool("test", false, "enables a test mode that cycles through memes.")
+
 	api := lightpack.API{
 		Address: "192.168.0.12:3636",
 	}
 
-	if err := api.Connect(); err != nil {
-		panic(err)
-		return
+	if !(*testing) {
+		if err := api.Connect(); err != nil {
+			panic(err)
+			return
+		}
 	}
 
 	config := &goserial.Config{Name: findArduino(), Baud: 115200}
@@ -63,6 +69,10 @@ func main() {
 	}()
 
 	fmt.Println("Started and connected.")
+	if *testing {
+		doTestingMemes(s)
+		return
+	}
 
 	requestNumber := 14
 	ledsOn := false
