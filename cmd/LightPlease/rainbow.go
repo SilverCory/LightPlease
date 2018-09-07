@@ -57,9 +57,6 @@ func doTestingMemes(s io.ReadWriteCloser) {
 
 func createColourMatrix(angle int) (red, green, blue byte) {
 	angle = angle + 15
-	if angle > 360 {
-		angle = angle - 360
-	}
 
 	if angle < 60 {
 		red = 255
@@ -85,6 +82,10 @@ func createColourMatrix(angle int) (red, green, blue byte) {
 		red = 255
 		green = 0
 		blue = HSVlights[360-angle]
+	}
+
+	if angle > 360 {
+		angle = angle - 360
 	}
 
 	return
