@@ -43,12 +43,14 @@ func doTestingMemes(s io.ReadWriteCloser) {
 			time.Sleep(time.Millisecond * 15)
 		}
 
-		for w := 0; w < 360*15; w++ {
-			r, g, b := createColourMatrix(w)
-			if err := sendArduinoCommand(byte('F'), r, g, b, 0, s); err != nil {
-				fmt.Println(err)
+		for i := 0; i < 15; i++ {
+			for w := 0; w < 360; w++ {
+				r, g, b := createColourMatrix(w)
+				if err := sendArduinoCommand(byte('F'), r, g, b, 0, s); err != nil {
+					fmt.Println(err)
+				}
+				time.Sleep(time.Millisecond * 15)
 			}
-			time.Sleep(time.Millisecond * 15)
 		}
 
 	}
