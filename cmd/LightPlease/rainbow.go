@@ -19,28 +19,28 @@ func doTestingMemes(s io.ReadWriteCloser) {
 			if err := sendArduinoCommand(byte('F'), correctionArray[r], 0, 0, 0, s); err != nil {
 				fmt.Println(err)
 			}
-			time.Sleep(time.Millisecond * 50)
+			time.Sleep(time.Millisecond * 15)
 		}
 
 		for g := 0; g < len(correctionArray); g++ {
 			if err := sendArduinoCommand(byte('F'), 0, correctionArray[g], 0, 0, s); err != nil {
 				fmt.Println(err)
 			}
-			time.Sleep(time.Millisecond * 50)
+			time.Sleep(time.Millisecond * 15)
 		}
 
 		for b := 0; b < len(correctionArray); b++ {
 			if err := sendArduinoCommand(byte('F'), 0, 0, correctionArray[b], 0, s); err != nil {
 				fmt.Println(err)
 			}
-			time.Sleep(time.Millisecond * 50)
+			time.Sleep(time.Millisecond * 15)
 		}
 
 		for w := 0; w < len(correctionArray); w++ {
 			if err := sendArduinoCommand(byte('F'), 0, 0, 0, byte(w), s); err != nil {
 				fmt.Println(err)
 			}
-			time.Sleep(time.Millisecond * 50)
+			time.Sleep(time.Millisecond * 15)
 		}
 
 		for w := 0; w < 360*15; w++ {
@@ -57,6 +57,9 @@ func doTestingMemes(s io.ReadWriteCloser) {
 
 func createColourMatrix(angle int) (red, green, blue byte) {
 	angle = angle + 15
+	if angle > 360 {
+		angle = angle - 360
+	}
 
 	if angle < 60 {
 		red = 255
@@ -79,13 +82,13 @@ func createColourMatrix(angle int) (red, green, blue byte) {
 		green = 0
 		blue = 255
 	} else {
+		index := 360 - angle
+		if index < 0 || index > len(HSVlights) {
+			index = 0
+		}
 		red = 255
 		green = 0
-		blue = HSVlights[360-angle]
-	}
-
-	if angle > 360 {
-		angle = angle - 360
+		blue = HSVlights[index]
 	}
 
 	return
