@@ -36,6 +36,7 @@ var correctionArray = []uint8{
 func main() {
 
 	testing := flag.Bool("test", false, "enables a test mode that cycles through memes.")
+	port := flag.String("port", "", "the com/serial port to listen on")
 	flag.Parse()
 
 	api := lightpack.API{
@@ -49,7 +50,14 @@ func main() {
 		}
 	}
 
-	config := &goserial.Config{Name: findArduino(), Baud: 115200}
+	var portName string
+	if *port != "" {
+		portName = *port
+	} else {
+		portName = findArduino()
+	}
+
+	config := &goserial.Config{Name: portName, Baud: 115200}
 	s, err := goserial.OpenPort(config)
 	if err != nil {
 		panic(err)
@@ -63,7 +71,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			sendArduinoCommand(byte('F'), uint8(0), uint8(0), uint8(0), uint8(0), s)
+			sendArduinoCommand(byte('D'), uint8(0), uint8(0), uint8(0), uint8(0), s)
 			s.Close()
 			os.Exit(0)
 		}
@@ -89,7 +97,7 @@ func main() {
 
 			if status != lightpack.StatusOn {
 				ledsOn = false
-				sendArduinoCommand(byte('F'), uint8(0), uint8(0), uint8(0), uint8(0), s) // Turn off the LEDs.
+				sendArduinoCommand(byte('D'), uint8(0), uint8(0), uint8(0), uint8(0), s) // Turn off the LEDs.
 			} else {
 				ledsOn = true
 			}
@@ -107,7 +115,7 @@ func main() {
 		}
 
 		lastColour := colors[len(colors)-2] // Not sure why it's neg 2...
-		if err := sendArduinoCommand(byte('F'), correctionArray[lastColour.R], correctionArray[lastColour.G], correctionArray[lastColour.B], 0, s); err != nil {
+		if err := sendArduinoCommand(byte('P'), correctionArray[lastColour.R], correctionArray[lastColour.G], correctionArray[lastColour.B], 0, s); err != nil {
 			fmt.Println(err)
 			if err.Error() != "short write" {
 				s, err = goserial.OpenPort(config)
@@ -144,11 +152,16 @@ func sendArduinoCommand(command byte, red, green, blue, white byte, serialPort i
 // Arduino, otherwise an empty string if unable to find
 // something that 'looks' like an Arduino device.
 func findArduino() string {
+
+	if host, err := os.Hostname(); err != nil && strings.ContainsAny(host, "corys") {
+		return "COM10"
+	}
+
 	contents, _ := ioutil.ReadDir("/dev")
 
 	// Look for what is mostly likely the Arduino device
 	for _, f := range contents {
-		if strings.Contains(f.Name(), "serial") {
+		if strings.Contains(f.Name(), "serial") || strings.Contains(f.Name(), "ttyS") || strings.Contains(f.Name(), "ttyAMA") {
 			return "/dev/" + f.Name()
 		}
 	}

@@ -19,6 +19,14 @@ void setup() {
   pinMode(BLUEPIN,  OUTPUT);
   pinMode(WHITEPIN,  OUTPUT);
 
+  // Disable millis()
+  TIMSK0 &= ~_BV(TOIE0);
+
+  // Set PWM to highest feqs possible.
+  TCCR0B = TCCR0B & B11111000 | B00000001;
+  TCCR1B = TCCR1B & B11111000 | B00000001;
+  TCCR2B = TCCR2B & B11111000 | B00000001;
+
   Serial.begin(115200);
 }
 
@@ -32,11 +40,42 @@ void showAnalogRGBW( const Command& cmd)
   analogWrite(WHITEPIN,  cmd.w );
 }
 
+
+// Display the RGBW as solid.
+void showDigitalRGBW( const Command& cmd)
+{
+  if (cmd.r == 0) {
+    digitalWrite(REDPIN, LOW );
+  } else {
+    digitalWrite(REDPIN, HIGH );
+  }
+
+  if (cmd.g == 0) {
+    digitalWrite(REDPIN, LOW );
+  } else {
+    digitalWrite(REDPIN, HIGH );
+  }
+
+  if (cmd.b == 0) {
+    digitalWrite(BLUEPIN, LOW );
+  } else {
+    digitalWrite(BLUEPIN, HIGH );
+  }
+  
+  if (cmd.w == 0) {
+    digitalWrite(WHITEPIN, LOW );
+  } else {
+    digitalWrite(WHITEPIN, HIGH );
+  }
+}
+
 void loop()
 {
   Command cmd = ReadCommand();
-  if (cmd.instruction == 'F') {
+  if (cmd.instruction == 'P') {
     showAnalogRGBW(cmd);
+  } else if (cmd.instruction == 'D') {
+    showDigitalRGBW(cmd);
   }
 }
 
