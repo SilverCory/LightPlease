@@ -86,6 +86,7 @@ func main() {
 
 	if *brightest {
 		sendArduinoCommand(byte('P'), uint8(255), uint8(255), uint8(255), uint8(255), s)
+		return
 	}
 
 	requestNumber := 14
