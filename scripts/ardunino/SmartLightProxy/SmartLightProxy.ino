@@ -74,9 +74,10 @@ void loop()
   Command cmd = ReadCommand();
   if (cmd.instruction == 'P') {
     showAnalogRGBW(cmd);
-  } else if (cmd.instruction == 'D') {
-    showDigitalRGBW(cmd);
   }
+//  } else if (cmd.instruction == 'D') {
+//    showDigitalRGBW(cmd);
+//  }
 }
 
 /**
@@ -86,7 +87,7 @@ void loop()
 Command ReadCommand() {
   // Not enough bytes for a command, return an empty command.
   if (Serial.available() < 5) {
-  return (Command) {'*', 0.0};
+    return (Command) {'*', 0.0};
   }
   
   char c = Serial.read();

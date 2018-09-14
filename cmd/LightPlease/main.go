@@ -71,7 +71,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			sendArduinoCommand(byte('D'), uint8(0), uint8(0), uint8(0), uint8(0), s)
+			sendArduinoCommand(byte('P'), uint8(0), uint8(0), uint8(0), uint8(0), s)
 			s.Close()
 			os.Exit(0)
 		}
@@ -97,7 +97,7 @@ func main() {
 
 			if status != lightpack.StatusOn {
 				ledsOn = false
-				sendArduinoCommand(byte('D'), uint8(0), uint8(0), uint8(0), uint8(0), s) // Turn off the LEDs.
+				sendArduinoCommand(byte('P'), uint8(0), uint8(0), uint8(0), uint8(0), s) // Turn off the LEDs.
 			} else {
 				ledsOn = true
 			}
@@ -115,7 +115,13 @@ func main() {
 		}
 
 		lastColour := colors[len(colors)-2] // Not sure why it's neg 2...
-		if err := sendArduinoCommand(byte('P'), correctionArray[lastColour.R], correctionArray[lastColour.G], correctionArray[lastColour.B], 0, s); err != nil {
+		red, green, blue, white := correctionArray[lastColour.R], correctionArray[lastColour.G], correctionArray[lastColour.B], uint8(0)
+		if red > 230 && green > 230 && blue > 230 {
+			// Average colour of all = white
+			white = ((red * red) + (green * green) + (blue * blue)) / 3
+		}
+
+		if err := sendArduinoCommand(byte('P'), correctionArray[lastColour.R], correctionArray[lastColour.G], correctionArray[lastColour.B], white, s); err != nil {
 			fmt.Println(err)
 			if err.Error() != "short write" {
 				s, err = goserial.OpenPort(config)
