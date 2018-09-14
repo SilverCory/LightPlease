@@ -36,6 +36,7 @@ var correctionArray = []uint8{
 func main() {
 
 	testing := flag.Bool("test", false, "enables a test mode that cycles through memes.")
+	brightest := flag.Bool("brightest", false, "Turn  the light on to it's brightest state.")
 	port := flag.String("port", "", "the com/serial port to listen on")
 	flag.Parse()
 
@@ -81,6 +82,10 @@ func main() {
 	if *testing {
 		doTestingMemes(s)
 		return
+	}
+
+	if *brightest {
+		sendArduinoCommand(byte('P'), uint8(255), uint8(255), uint8(255), uint8(255), s)
 	}
 
 	requestNumber := 14
