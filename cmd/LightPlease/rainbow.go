@@ -49,6 +49,7 @@ func doTestingMemes(s io.ReadWriteCloser) {
 				if err := sendArduinoCommand("PWM", r, g, b, 0, s); err != nil {
 					fmt.Println(err)
 				}
+				time.Sleep(10 * time.Millisecond)
 			}
 		}
 
