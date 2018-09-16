@@ -1,17 +1,14 @@
+#include <SerialCommand.h>
 #include <SoftwareSerial.h>
+#include <avr/wdt.h>
 
 #define REDPIN   3
 #define GREENPIN 6
 #define BLUEPIN  9
 #define WHITEPIN  10
 
-typedef struct {
-  char instruction; // The instruction that arrived by serial connection.
-  uint8_t r;
-  uint8_t g;
-  uint8_t b;
-  uint8_t w;
-} Command;
+const unsigned int MAX_INPUT = 10;
+SerialCommand sCmd; 
 
 void setup() {
   pinMode(REDPIN,   OUTPUT);
@@ -19,8 +16,9 @@ void setup() {
   pinMode(BLUEPIN,  OUTPUT);
   pinMode(WHITEPIN,  OUTPUT);
 
-  // Disable millis()
+  // Disable millis() and watchdog.
   TIMSK0 &= ~_BV(TOIE0);
+  wdt_disable();
 
   // Set PWM to highest feqs possible.
   TCCR0B = TCCR0B & B11111000 | B00000001;
@@ -28,75 +26,138 @@ void setup() {
   TCCR2B = TCCR2B & B11111000 | B00000001;
 
   Serial.begin(115200);
+  sCmd.addCommand("SetState", SetLEDState);
+  sCmd.addCommand("PWM", SetLEDPWM);
+  sCmd.addCommand("Digital", SetLEDDigital);
 }
 
+void SetLEDDigital() {
+  bool red, green, blue, white;
+  char *arg;
+
+  arg = sCmd.next();
+  if (arg == NULL) {
+    Serial.println("ERR: Invalid red boolean provided.");
+    return;
+  }
+  red = atoi(arg) == 1;
+
+  arg = sCmd.next();
+  if (arg == NULL) {
+    Serial.println("ERR: Invalid green boolean provided.");
+    return;
+  }
+  green = atoi(arg) == 1;
+
+  arg = sCmd.next();
+  if (arg == NULL) {
+    Serial.println("ERR: Invalid blue boolean provided.");
+    return;
+  }
+  blue = atoi(arg) == 1;
+
+  arg = sCmd.next();
+  if (arg == NULL) {
+    Serial.println("ERR: Invalid white boolean provided.");
+    return;
+  }
+  white = atoi(arg) == 1;
+  showDigitalRGBW(red, green, blue, white);
+  
+}
+
+void SetLEDPWM() {
+  uint8_t red, green, blue, white;
+  char *arg;
+  
+  arg = sCmd.next();
+  if (arg == NULL) {
+    Serial.println("ERR: Invalid red colour provided.");
+    return;
+  }
+  red = atoi(arg);
+
+  arg = sCmd.next();
+  if (arg == NULL) {
+    Serial.println("ERR: Invalid green colour provided.");
+    return;
+  }
+  green = atoi(arg);
+
+  arg = sCmd.next();
+  if (arg == NULL) {
+    Serial.println("ERR: Invalid blue colour provided.");
+    return;
+  }
+  blue = atoi(arg);
+
+  arg = sCmd.next();
+  if (arg == NULL) {
+    Serial.println("ERR: Invalid white colour provided.");
+    return;
+  }
+  white = atoi(arg);
+
+  showAnalogRGBW(red, green, blue, white);
+  
+}
+
+void SetLEDState() {
+  char *arg;
+  arg = sCmd.next();
+  if (arg != NULL) {
+    if (String(arg).equals("ON")) {
+      showDigitalRGBW(true, true, true, true);
+    } else if (String(arg).equals("OFF")){
+      showDigitalRGBW(false, false, false, false);
+    } else {
+      Serial.println("ERR: invalid argument provided! Not 'ON' or 'OFF'!");
+    }
+    return;
+  }
+
+  Serial.println("ERR: no argument provided! Valid arguments 'ON' or 'OFF'!");
+}
 
 // Display the RGBW via PWM
-void showAnalogRGBW( const Command& cmd)
-{  
-  analogWrite(REDPIN,   cmd.r );
-  analogWrite(GREENPIN, cmd.g );
-  analogWrite(BLUEPIN,  cmd.b );
-  analogWrite(WHITEPIN,  cmd.w );
+void showAnalogRGBW(uint8_t red, uint8_t green, uint8_t blue, uint8_t white)
+{
+  analogWrite(REDPIN, red);
+  analogWrite(GREENPIN, green);
+  analogWrite(BLUEPIN, blue);
+  analogWrite(WHITEPIN, white);
 }
 
 
 // Display the RGBW as solid.
-void showDigitalRGBW( const Command& cmd)
+void showDigitalRGBW(bool red, bool green, bool blue, bool white)
 {
-  if (cmd.r == 0) {
-    digitalWrite(REDPIN, LOW );
-  } else {
+  if (red) {
     digitalWrite(REDPIN, HIGH );
+  } else {
+    digitalWrite(REDPIN, LOW );
   }
 
-  if (cmd.g == 0) {
-    digitalWrite(REDPIN, LOW );
-  } else {
+  if (green) {
     digitalWrite(REDPIN, HIGH );
+  } else {
+    digitalWrite(REDPIN, LOW );
   }
 
-  if (cmd.b == 0) {
-    digitalWrite(BLUEPIN, LOW );
-  } else {
+  if (blue) {
     digitalWrite(BLUEPIN, HIGH );
-  }
-  
-  if (cmd.w == 0) {
-    digitalWrite(WHITEPIN, LOW );
   } else {
+    digitalWrite(BLUEPIN, LOW );
+  }
+
+  if (white) {
     digitalWrite(WHITEPIN, HIGH );
+  } else {
+    digitalWrite(WHITEPIN, LOW );
   }
 }
 
 void loop()
 {
-  Command cmd = ReadCommand();
-  if (cmd.instruction == 'P') {
-    showAnalogRGBW(cmd);
-  }
-//  } else if (cmd.instruction == 'D') {
-//    showDigitalRGBW(cmd);
-//  }
+  sCmd.readSerial();
 }
-
-/**
- * ReadCommand sucks down the lastest command from the serial port,
- * returns {'*', 0.0} if no new command is available.
- */
-Command ReadCommand() {
-  // Not enough bytes for a command, return an empty command.
-  if (Serial.available() < 5) {
-    return (Command) {'*', 0.0};
-  }
-  
-  char c = Serial.read();
-  uint8_t r = Serial.read();
-  uint8_t g = Serial.read();
-  uint8_t b = Serial.read();
-  uint8_t w = Serial.read();
-
-  return (Command) {c, r, g, b, w};
-}
-
-

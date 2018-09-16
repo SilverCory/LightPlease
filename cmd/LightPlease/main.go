@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"image/color"
 	"io"
 	"io/ioutil"
 	"os"
@@ -72,7 +73,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			sendArduinoCommand(byte('P'), uint8(0), uint8(0), uint8(0), uint8(0), s)
+			sendArduinoCommand("PWM", uint8(0), uint8(0), uint8(0), uint8(0), s)
 			s.Close()
 			os.Exit(0)
 		}
@@ -85,7 +86,7 @@ func main() {
 	}
 
 	if *brightest {
-		sendArduinoCommand(byte('P'), uint8(255), uint8(255), uint8(255), uint8(255), s)
+		sendArduinoCommand("PWM", uint8(255), uint8(255), uint8(255), uint8(255), s)
 		return
 	}
 
@@ -103,7 +104,7 @@ func main() {
 
 			if status != lightpack.StatusOn {
 				ledsOn = false
-				sendArduinoCommand(byte('P'), uint8(0), uint8(0), uint8(0), uint8(0), s) // Turn off the LEDs.
+				sendArduinoCommand("PWM", uint8(0), uint8(0), uint8(0), uint8(0), s) // Turn off the LEDs.
 			} else {
 				ledsOn = true
 			}
@@ -122,12 +123,10 @@ func main() {
 
 		lastColour := colors[len(colors)-2] // Not sure why it's neg 2...
 		red, green, blue, white := correctionArray[lastColour.R], correctionArray[lastColour.G], correctionArray[lastColour.B], uint8(0)
-		if red > 230 && green > 230 && blue > 230 {
-			// Average colour of all = white
-			white = ((red * red) + (green * green) + (blue * blue)) / 3
-		}
+		r, g, b, _ := color.RGBA{R: red, G: green, B: blue}.RGBA()
+		white = correctionArray[uint8((19595*r+38470*g+7471*b+1<<15)>>24)]
 
-		if err := sendArduinoCommand(byte('P'), correctionArray[lastColour.R], correctionArray[lastColour.G], correctionArray[lastColour.B], white, s); err != nil {
+		if err := sendArduinoCommand("PWM", red, green, blue, white, s); err != nil {
 			fmt.Println(err)
 			if err.Error() != "short write" {
 				s, err = goserial.OpenPort(config)
@@ -142,17 +141,16 @@ func main() {
 
 }
 
-func sendArduinoCommand(command byte, red, green, blue, white byte, serialPort io.ReadWriteCloser) error {
+func sendArduinoCommand(command string, red, green, blue, white byte, serialPort io.ReadWriteCloser) error {
 	if serialPort == nil {
 		return nil
 	}
 
-	// Transmit command and argument down the pipe.
-	for _, v := range [][]byte{{command}, {red}, {green}, {blue}, {white}} {
-		_, err := serialPort.Write(v)
-		if err != nil {
-			return err
-		}
+	cmd := fmt.Sprint(command, " ", red, " ", green, " ", blue, " ", white, "\t\n")
+	_, err := serialPort.Write([]byte(cmd))
+	if err != nil {
+		fmt.Println(err)
+		return err
 	}
 
 	return nil

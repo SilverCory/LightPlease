@@ -15,46 +15,55 @@ func doTestingMemes(s io.ReadWriteCloser) {
 
 	for {
 
-		for r := 0; r < len(correctionArray); r++ {
-			if err := sendArduinoCommand(byte('P'), correctionArray[r], 0, 0, 0, s); err != nil {
+		fadeInAndOut(func(r int) {
+			if err := sendArduinoCommand("PWM", correctionArray[r], 0, 0, 0, s); err != nil {
 				fmt.Println(err)
 			}
 			time.Sleep(time.Millisecond * 15)
-		}
+		})
 
-		for g := 0; g < len(correctionArray); g++ {
-			if err := sendArduinoCommand(byte('P'), 0, correctionArray[g], 0, 0, s); err != nil {
+		fadeInAndOut(func(g int) {
+			if err := sendArduinoCommand("PWM", 0, correctionArray[g], 0, 0, s); err != nil {
 				fmt.Println(err)
 			}
 			time.Sleep(time.Millisecond * 15)
-		}
+		})
 
-		for b := 0; b < len(correctionArray); b++ {
-			if err := sendArduinoCommand(byte('P'), 0, 0, correctionArray[b], 0, s); err != nil {
+		fadeInAndOut(func(b int) {
+			if err := sendArduinoCommand("PWM", 0, 0, correctionArray[b], 0, s); err != nil {
 				fmt.Println(err)
 			}
 			time.Sleep(time.Millisecond * 15)
-		}
+		})
 
-		for w := 0; w < len(correctionArray); w++ {
-			if err := sendArduinoCommand(byte('P'), 0, 0, 0, byte(w), s); err != nil {
+		fadeInAndOut(func(w int) {
+			if err := sendArduinoCommand("PWM", 0, 0, 0, byte(w), s); err != nil {
 				fmt.Println(err)
 			}
 			time.Sleep(time.Millisecond * 15)
-		}
+		})
 
 		for i := 0; i < 15; i++ {
 			for w := 0; w < 360; w++ {
 				r, g, b := createColourMatrix(w)
-				if err := sendArduinoCommand(byte('P'), r, g, b, 0, s); err != nil {
+				if err := sendArduinoCommand("PWM", r, g, b, 0, s); err != nil {
 					fmt.Println(err)
 				}
-				time.Sleep(time.Millisecond * 15)
 			}
 		}
 
 	}
 
+}
+
+func fadeInAndOut(callBack func(out int)) {
+	for i := 0; i < len(correctionArray); i++ {
+		callBack(i)
+	}
+
+	for i := len(correctionArray) - 1; i > 0; i-- {
+		callBack(i)
+	}
 }
 
 func createColourMatrix(angle int) (red, green, blue byte) {
