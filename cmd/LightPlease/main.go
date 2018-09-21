@@ -136,7 +136,7 @@ func main() {
 			}
 		}
 
-		time.Sleep(10 * time.Millisecond) // Sleep so we don't crash the API.
+		time.Sleep(23 * time.Millisecond) // Sleep so we don't crash the API.
 	}
 
 }
